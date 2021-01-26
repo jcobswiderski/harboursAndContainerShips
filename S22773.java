@@ -1,19 +1,28 @@
 package project;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Random;
 
 public class S22773 {
     public static void main(String[] args) {
 
-        Harbour port = new Harbour("Gdańsk", 25000);
-        port.generateContainers(100);
+        Harbour port = new Harbour("Gdańsk", 50000);
+        port.generateContainers(50);
 
-        Ship ship = new Ship("Maersk", 1500);
+        Ship ship = new Ship("Maersk", 10);
 
         for (int i=0; i<port.numOfContainers; i++) {
             System.out.print(i+1 + ". ");
             System.out.println(port.containers[i]);
         }
+
+        port.saveToFile("C:\\2021Z\\containers.txt");
+        ship.readFromFile("C:\\2021Z\\containers.txt");
+
+        System.out.println(ship.load[0]);
     }
 }
 
@@ -68,7 +77,7 @@ class Harbour {
                     break;
                 case 8:
                     generatedMass = (float)(Math.random() * 30.0);
-                    this.containers[i] = new PalletWideContainer(generatedMass, "pallet", 30);
+                    this.containers[i] = new PalletWideContainer(generatedMass, "pallet");
                     break;
                 case 9:
                     generatedMass = (float)(Math.random() * 36.0);
@@ -78,6 +87,19 @@ class Harbour {
                     System.out.println("BLAD PETLI!!!!"); // Make throw error
             }
             this.numOfContainers++;
+        }
+    }
+
+    void saveToFile(String path) {
+        try {
+            FileWriter file = new FileWriter(path);
+
+            for(int i=0; i<this.numOfContainers; i++) {
+                file.write(this.containers[i].toString());
+            }
+            file.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
@@ -93,6 +115,73 @@ class Ship {
         this.maxCapacity = maxCapacity;
         this.currentLoad = 0;
         this.load = new Container[maxCapacity];
+    }
+
+    public void readFromFile(String path) {
+        try {
+            FileReader file = new FileReader(path);
+
+            int readedContainers = 0;
+
+            while(readedContainers < this.maxCapacity) {
+                char temp = (char)file.read();
+                String concatenate = "";
+                while(temp != '{') {
+                    concatenate += temp;
+                    temp = (char)file.read();
+                }
+                System.out.println(concatenate);
+
+                while(temp != '=') {
+                    temp = (char)file.read();
+                }
+
+                String massTemp = "";
+                temp = (char)file.read();
+                while(temp != ',') {
+                    massTemp += temp;
+                    temp = (char)file.read();
+
+                }
+                System.out.println(massTemp);
+
+                while(temp != '\'') {
+                    temp = (char)file.read();
+                }
+
+                temp = (char)file.read();
+                String contentTemp = "";
+                while(temp != '\'') {
+
+                    contentTemp += temp;
+                    temp = (char)file.read();
+                }
+                System.out.println(contentTemp);
+
+                while(temp != '}') {
+                    temp = (char)file.read();
+                }
+
+
+
+                switch(concatenate) {
+                    case "GeneralPurposeContainer":
+                        this.load[readedContainers] = new GeneralPurposeContainer(Float.parseFloat(massTemp), contentTemp);
+                        break;
+                    default:
+                        break;
+
+                }
+                readedContainers++;
+            }
+
+            file.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 
@@ -124,11 +213,15 @@ class GeneralPurposeContainer extends Container {
 
     @Override
     public String toString() {
-        return "GeneralPurposeContainer { "+
-                mass + "t / " + maxLoad + "t, " +
-                length + "ft x " + width + "ft x " + height + "ft, " +
-                content + ", weatherProof=" +
-                weatherProof + "}";
+        return "GeneralPurposeContainer{" +
+                "mass=" + mass +
+                ", maxLoad=" + maxLoad +
+                ", length=" + length +
+                ", width=" + width +
+                ", height=" + height +
+                ", content='" + content + '\'' +
+                ", weatherProof=" + weatherProof +
+                '}';
     }
 }
 
@@ -181,8 +274,8 @@ class DoubleDoorContainer extends Container {
 }
 
 class FlatRackContainer extends Container {
-    public FlatRackContainer(float massLoad, String content) {
-        super(massLoad, 40f, 20, 8, 8, content);
+    public FlatRackContainer(float mass, String content) {
+        super(mass, 40f, 20, 8, 8, content);
     }
 
     @Override
@@ -199,8 +292,8 @@ class FlatRackContainer extends Container {
 }
 
 class OpenTopContainer extends Container {
-    public OpenTopContainer(float massLoad, String content) {
-        super(massLoad, 28.2f, 20, 8, 8, content);
+    public OpenTopContainer(float mass, String content) {
+        super(mass, 28.2f, 20, 8, 8, content);
     }
 
     @Override
@@ -235,8 +328,8 @@ class HighCubeContainer extends Container {
 }
 
 class InsulatedContainer extends Container {
-    public InsulatedContainer(float massLoad, String content) {
-        super(massLoad, 22f, 20, 8, 8, content);
+    public InsulatedContainer(float mass, String content) {
+        super(mass, 22f, 20, 8, 8, content);
     }
 
     @Override
@@ -255,8 +348,8 @@ class InsulatedContainer extends Container {
 class TankContainer extends Container {
     int fluidCapacity;
 
-    public TankContainer(float massLoad, String content) {
-        super(massLoad, 36f, 20, 8, 8, content);
+    public TankContainer(float mass, String content) {
+        super(mass, 36f, 20, 8, 8, content);
         this.fluidCapacity = 26000;
     }
 
@@ -276,12 +369,10 @@ class TankContainer extends Container {
 
 class PalletWideContainer extends Container {
     short maxPalletQuantity;
-    public short currentPalletQuantity;
 
-    public PalletWideContainer(float massLoad, String content, int currentPalletQuantity) {
-        super(massLoad, 30f, 40, 8, 9, content);
+    public PalletWideContainer(float mass, String content) {
+        super(mass, 30f, 40, 8, 9, content);
         this.maxPalletQuantity = (short)30;
-        this.currentPalletQuantity = (short)currentPalletQuantity;
     }
 
     @Override
@@ -294,7 +385,6 @@ class PalletWideContainer extends Container {
                 ", height=" + height +
                 ", content='" + content + '\'' +
                 ", maxPalletQuantity=" + maxPalletQuantity +
-                ", currentPalletQuantity=" + currentPalletQuantity +
                 '}';
     }
 }
