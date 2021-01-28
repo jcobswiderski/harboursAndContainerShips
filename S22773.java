@@ -9,38 +9,44 @@ import java.util.Random;
 public class S22773 {
     public static void main(String[] args) {
 
-        Harbour port = new Harbour("Gdańsk", 50000);
-        port.generateContainers(50);
-
-        Ship ship = new Ship("Maersk", 10);
-
-        for (int i=0; i<port.numOfContainers; i++) {
-            System.out.print(i+1 + ". ");
-            System.out.println(port.containers[i]);
-        }
-
+        Harbour port = new Harbour("Gdańsk", 200);
+        port.showContainers();
+        port.generateContainers(5);
+        port.showContainers();
+        port.generateContainers(5);
+        port.showContainers();
+        port.generateContainers(12);
+        port.showContainers();
         port.saveToFile("C:\\2021Z\\containers.txt");
-        ship.readFromFile("C:\\2021Z\\containers.txt");
 
-        System.out.println(ship.load[0]);
+        Ship ship = new Ship("Maersk", 20);
+        ship.readFromFile("C:\\2021Z\\containers.txt");
+        ship.showLoad();
     }
 }
 
 class Harbour {
-    String cityName;
-    int capacity;
-    int numOfContainers;
+    private String cityName;
+    protected int capacity;
+    protected int numOfStoredContainers;
     Container[] containers;
 
     public Harbour(String cityName, int capacity) {
         this.cityName = cityName;
         this.capacity = capacity;
-        this.numOfContainers = 0;
+        this.numOfStoredContainers = 0;
         this.containers = new Container[capacity];
     }
 
     void generateContainers(int numOfContainers) {
-        for (int i=this.numOfContainers; i<numOfContainers; i++) {
+
+        if(this.getNumOfStoredContainers() + numOfContainers > this.getCapacity()) {
+            numOfContainers = this.getCapacity() - this.getNumOfStoredContainers();
+            System.out.println("YOU TRY TO GENERATE TOO MUCH CONTAINERS! NUM OF LOADED CONTAINERS IS CUT TO THE MAX");
+        }
+
+        System.out.println("GENERATE " + numOfContainers + " CONTAINERS IN " + this.getCityName());
+        for (int i=this.numOfStoredContainers; i<this.getNumOfStoredContainers()+numOfContainers; i++) {
             float generatedMass;
             switch ((int)(Math.random() * 10)) {
                 case 0:
@@ -86,15 +92,16 @@ class Harbour {
                 default:
                     System.out.println("BLAD PETLI!!!!"); // Make throw error
             }
-            this.numOfContainers++;
+
         }
+        this.numOfStoredContainers += numOfContainers;
     }
 
     void saveToFile(String path) {
         try {
             FileWriter file = new FileWriter(path);
 
-            for(int i=0; i<this.numOfContainers; i++) {
+            for(int i=0; i<this.numOfStoredContainers; i++) {
                 file.write(this.containers[i].toString());
             }
             file.close();
@@ -102,12 +109,37 @@ class Harbour {
             e.printStackTrace();
         }
     }
+
+    void showContainers() {
+        System.out.println(
+                '\n' + "PORT: " + this.getCityName() + ", CONTAINERS: " + this.getNumOfStoredContainers() + " / " + this.getCapacity()
+        );
+
+        for (int i=0; i<this.numOfStoredContainers; i++) {
+            System.out.println(
+                    i + 1 + ". " + this.containers[i]
+            );
+        }
+        System.out.println();
+    }
+
+    String getCityName() {
+        return this.cityName;
+    }
+
+    int getNumOfStoredContainers() {
+        return this.numOfStoredContainers;
+    }
+
+    int getCapacity() {
+        return this.capacity;
+    }
 }
 
 class Ship {
-    String name;
-    int maxCapacity;
-    int currentLoad;
+    private String name;
+    protected int maxCapacity;
+    protected int currentLoad;
     Container[] load;
 
     public Ship(String name, int maxCapacity) {
@@ -121,16 +153,21 @@ class Ship {
         try {
             FileReader file = new FileReader(path);
 
-            int readedContainers = 0;
+            System.out.println("SHIP LOADING IN PROGRESS...");
+            int initialyNumOfContainers = this.getCurrentLoad();
 
-            while(readedContainers < this.maxCapacity) {
+            while(this.currentLoad < this.maxCapacity) {
                 char temp = (char)file.read();
-                String concatenate = "";
+
+                if(temp == '\uFFFF') {
+                    break;
+                }
+
+                String containerName = "";
                 while(temp != '{') {
-                    concatenate += temp;
+                    containerName += temp;
                     temp = (char)file.read();
                 }
-                System.out.println(concatenate);
 
                 while(temp != '=') {
                     temp = (char)file.read();
@@ -141,9 +178,7 @@ class Ship {
                 while(temp != ',') {
                     massTemp += temp;
                     temp = (char)file.read();
-
                 }
-                System.out.println(massTemp);
 
                 while(temp != '\'') {
                     temp = (char)file.read();
@@ -152,36 +187,80 @@ class Ship {
                 temp = (char)file.read();
                 String contentTemp = "";
                 while(temp != '\'') {
-
                     contentTemp += temp;
                     temp = (char)file.read();
                 }
-                System.out.println(contentTemp);
 
                 while(temp != '}') {
                     temp = (char)file.read();
                 }
 
-
-
-                switch(concatenate) {
+                switch(containerName) {
                     case "GeneralPurposeContainer":
-                        this.load[readedContainers] = new GeneralPurposeContainer(Float.parseFloat(massTemp), contentTemp);
+                        this.load[this.currentLoad] = new GeneralPurposeContainer(Float.parseFloat(massTemp), contentTemp);
+                        break;
+                    case "HardTopContainerShort":
+                        this.load[this.currentLoad] = new HardTopContainerShort(Float.parseFloat(massTemp), contentTemp);
+                        break;
+                    case "HardTopContainerLong":
+                        this.load[this.currentLoad] = new HardTopContainerLong(Float.parseFloat(massTemp), contentTemp);
+                        break;
+                    case "DoubleDoorContainer":
+                        this.load[this.currentLoad] = new DoubleDoorContainer(Float.parseFloat(massTemp), contentTemp);
+                        break;
+                    case "FlatRackContainer":
+                        this.load[this.currentLoad] = new FlatRackContainer(Float.parseFloat(massTemp), contentTemp);
+                        break;
+                    case "HighCubeContainer":
+                        this.load[this.currentLoad] = new HighCubeContainer(Float.parseFloat(massTemp), contentTemp);
+                        break;
+                    case "InsulatedContainer":
+                        this.load[this.currentLoad] = new InsulatedContainer(Float.parseFloat(massTemp), contentTemp);
+                        break;
+                    case "OpenTopContainer":
+                        this.load[this.currentLoad] = new OpenTopContainer(Float.parseFloat(massTemp), contentTemp);
+                        break;
+                    case "PalletWideContainer":
+                        this.load[this.currentLoad] = new PalletWideContainer(Float.parseFloat(massTemp), contentTemp);
+                        break;
+                    case "TankContainer":
+                        this.load[this.currentLoad] = new TankContainer(Float.parseFloat(massTemp), contentTemp);
                         break;
                     default:
-                        break;
-
+                        System.out.println("BLAD WCZYTU NA STATEK");
                 }
-                readedContainers++;
+                this.currentLoad++;
             }
 
             file.close();
+
+            System.out.println("SHIP HAS BEEN LOADED BY " + (this.getCurrentLoad() - initialyNumOfContainers) + " CONTAINERS");
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    String getName() {
+        return this.name;
+    }
+
+    int getCurrentLoad() {
+        return this.currentLoad;
+    }
+
+    int getMaxCapacity() {
+        return this.maxCapacity;
+    }
+
+    void showLoad() {
+        System.out.println("\nSHIP: " + this.getName() + ", CONTAINERS: " + this.getCurrentLoad() + " / " + this.getMaxCapacity());
+        for(int i=0; i<this.currentLoad; i++) {
+            System.out.println(i+1 + ". " + this.load[i]);
+        }
+        System.out.println();
     }
 }
 
@@ -229,10 +308,16 @@ class HardTopContainer extends Container {
     public HardTopContainer(float mass, float maxLoad, int length, String content) {
         super(mass, maxLoad, length, 8, 8, content);
     }
+}
+
+class HardTopContainerShort extends HardTopContainer {
+    public HardTopContainerShort(float mass, String content) {
+        super(mass,27.7f, 20, content);
+    }
 
     @Override
     public String toString() {
-        return "HardTopContainer{" +
+        return "HardTopContainerShort{" +
                 "mass=" + mass +
                 ", maxLoad=" + maxLoad +
                 ", length=" + length +
@@ -243,15 +328,21 @@ class HardTopContainer extends Container {
     }
 }
 
-class HardTopContainerShort extends HardTopContainer {
-    public HardTopContainerShort(float mass, String content) {
-        super(mass,27.7f, 20, content);
-    }
-}
-
 class HardTopContainerLong extends HardTopContainer {
     public HardTopContainerLong(float mass, String content) {
         super(mass, 28.6f, 40, content);
+    }
+
+    @Override
+    public String toString() {
+        return "HardTopContainerLong{" +
+                "mass=" + mass +
+                ", maxLoad=" + maxLoad +
+                ", length=" + length +
+                ", width=" + width +
+                ", height=" + height +
+                ", content='" + content + '\'' +
+                '}';
     }
 }
 
