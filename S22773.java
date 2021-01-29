@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Random;
 
 public class S22773 {
     public static void main(String[] args) {
@@ -39,7 +38,6 @@ class Harbour {
     }
 
     void generateContainers(int numOfContainers) {
-
         if(this.getNumOfStoredContainers() + numOfContainers > this.getCapacity()) {
             numOfContainers = this.getCapacity() - this.getNumOfStoredContainers();
             System.out.println("YOU TRY TO GENERATE TOO MUCH CONTAINERS! NUM OF LOADED CONTAINERS IS CUT TO THE MAX");
@@ -47,50 +45,74 @@ class Harbour {
 
         System.out.println("GENERATE " + numOfContainers + " CONTAINERS IN " + this.getCityName());
         for (int i=this.numOfStoredContainers; i<this.getNumOfStoredContainers()+numOfContainers; i++) {
+
             float generatedMass;
+            String[] cargoType;
+            int drawCargo;
+
             switch ((int)(Math.random() * 10)) {
                 case 0:
                     generatedMass = (float)(Math.random() * 21.8);
-                    this.containers[i] = new GeneralPurposeContainer(generatedMass, "general");
+                    cargoType = new String[]{"electronics", "tools", "toys", "clothes"};
+                    drawCargo = (int)(Math.random() * cargoType.length);
+                    this.containers[i] = new GeneralPurposeContainer(generatedMass, cargoType[drawCargo]);
                     break;
                 case 1:
                     generatedMass = (float)(Math.random() * 27.7);
-                    this.containers[i] = new HardTopContainerShort(generatedMass, "short");
+                    cargoType = new String[]{"autoParts", "agriculturalParts", "machinery", "materials"};
+                    drawCargo = (int)(Math.random() * cargoType.length);
+                    this.containers[i] = new HardTopContainerShort(generatedMass, cargoType[drawCargo]);
                     break;
                 case 2:
                     generatedMass = (float)(Math.random() * 28.6);
-                    this.containers[i] = new HardTopContainerLong(generatedMass, "long");
+                    cargoType = new String[]{"boatParts", "planeParts", "machinery", "oversizedMaterials", "railwayEquipment"};
+                    drawCargo = (int)(Math.random() * cargoType.length);
+                    this.containers[i] = new HardTopContainerLong(generatedMass, cargoType[drawCargo]);
                     break;
                 case 3:
                     generatedMass = (float)(Math.random() * 28.2);
-                    this.containers[i] = new DoubleDoorContainer(generatedMass, "double");
+                    cargoType = new String[]{"motorbikes", "cars", "snowmobiles", "materials", "unsortedMaterials"};
+                    drawCargo = (int)(Math.random() * cargoType.length);
+                    this.containers[i] = new DoubleDoorContainer(generatedMass, cargoType[drawCargo]);
                     break;
                 case 4:
                     generatedMass = (float)(Math.random() * 40.0);
-                    this.containers[i] = new FlatRackContainer(generatedMass, "flat");
+                    cargoType = new String[]{"industrialEquipment", "oversizedMaterials", "engines", "railwayEquipment"};
+                    drawCargo = (int)(Math.random() * cargoType.length);
+                    this.containers[i] = new FlatRackContainer(generatedMass, cargoType[drawCargo]);
                     break;
                 case 5:
                     generatedMass = (float)(Math.random() * 26.5);
-                    this.containers[i] = new HighCubeContainer(generatedMass, "high");
+                    cargoType = new String[]{"industrialEquipment", "oversizedMaterials", "trucks", "forestryEquipment"};
+                    drawCargo = (int)(Math.random() * cargoType.length);
+                    this.containers[i] = new HighCubeContainer(generatedMass, cargoType[drawCargo]);
                     break;
                 case 6:
                     generatedMass = (float)(Math.random() * 22.0);
-                    this.containers[i] = new InsulatedContainer(generatedMass, "insulated");
+                    cargoType = new String[]{"food", "medicines", "cosmetics", "chemicalProducts"};
+                    drawCargo = (int)(Math.random() * cargoType.length);
+                    this.containers[i] = new InsulatedContainer(generatedMass, cargoType[drawCargo]);
                     break;
                 case 7:
                     generatedMass = (float)(Math.random() * 28.2);
-                    this.containers[i] = new OpenTopContainer(generatedMass, "open");
+                    cargoType = new String[]{"looseProducts", "airCirculationProducts", "wood", "fossilResources"};
+                    drawCargo = (int)(Math.random() * cargoType.length);
+                    this.containers[i] = new OpenTopContainer(generatedMass, cargoType[drawCargo]);
                     break;
                 case 8:
                     generatedMass = (float)(Math.random() * 30.0);
-                    this.containers[i] = new PalletWideContainer(generatedMass, "pallet");
+                    cargoType = new String[]{"euroPallets", "undersizedPallets"};
+                    drawCargo = (int)(Math.random() * cargoType.length);
+                    this.containers[i] = new PalletWideContainer(generatedMass, cargoType[drawCargo]);
                     break;
                 case 9:
                     generatedMass = (float)(Math.random() * 36.0);
+                    cargoType = new String[]{"oil", "diesel", "petrol", "liquids", "grease"};
+                    drawCargo = (int)(Math.random() * cargoType.length);
                     this.containers[i] = new TankContainer(generatedMass, "tank");
                     break;
                 default:
-                    System.out.println("BLAD PETLI!!!!"); // Make throw error
+                    System.out.println("There's no such type of container!");
             }
 
         }
@@ -99,6 +121,7 @@ class Harbour {
 
     void saveToFile(String path) {
         try {
+
             FileWriter file = new FileWriter(path);
 
             for(int i=0; i<this.numOfStoredContainers; i++) {
@@ -227,14 +250,14 @@ class Ship {
                         this.load[this.currentLoad] = new TankContainer(Float.parseFloat(massTemp), contentTemp);
                         break;
                     default:
-                        System.out.println("BLAD WCZYTU NA STATEK");
+                        System.out.println("CONTAINER LOADING FAILED!");
                 }
                 this.currentLoad++;
             }
 
             file.close();
 
-            System.out.println("SHIP HAS BEEN LOADED BY " + (this.getCurrentLoad() - initialyNumOfContainers) + " CONTAINERS");
+            System.out.println("SHIP HAS BEEN LOADED WITH " + (this.getCurrentLoad() - initialyNumOfContainers) + " CONTAINERS");
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -265,7 +288,7 @@ class Ship {
 }
 
 class Container {
-    float mass; //t
+    private float mass; //t
     float maxLoad; //t
     int length;
     int width; //ft
@@ -273,12 +296,20 @@ class Container {
     String content;
 
     public Container(float mass, float maxLoad, int length, int width, int height, String content) {
-        this.mass = mass;
+        this.setMass(mass);
         this.maxLoad = maxLoad;
         this.length = length;
         this.width = width;
         this.height = height;
         this.content = content;
+    }
+
+    public float getMass() {
+        return mass;
+    }
+
+    public void setMass(float mass) {
+        this.mass = mass;
     }
 }
 
@@ -293,7 +324,7 @@ class GeneralPurposeContainer extends Container {
     @Override
     public String toString() {
         return "GeneralPurposeContainer{" +
-                "mass=" + mass +
+                "mass=" + getMass() +
                 ", maxLoad=" + maxLoad +
                 ", length=" + length +
                 ", width=" + width +
@@ -318,7 +349,7 @@ class HardTopContainerShort extends HardTopContainer {
     @Override
     public String toString() {
         return "HardTopContainerShort{" +
-                "mass=" + mass +
+                "mass=" + getMass() +
                 ", maxLoad=" + maxLoad +
                 ", length=" + length +
                 ", width=" + width +
@@ -336,7 +367,7 @@ class HardTopContainerLong extends HardTopContainer {
     @Override
     public String toString() {
         return "HardTopContainerLong{" +
-                "mass=" + mass +
+                "mass=" + getMass() +
                 ", maxLoad=" + maxLoad +
                 ", length=" + length +
                 ", width=" + width +
@@ -354,7 +385,7 @@ class DoubleDoorContainer extends Container {
     @Override
     public String toString() {
         return "DoubleDoorContainer{" +
-                "mass=" + mass +
+                "mass=" + getMass() +
                 ", maxLoad=" + maxLoad +
                 ", length=" + length +
                 ", width=" + width +
@@ -372,7 +403,7 @@ class FlatRackContainer extends Container {
     @Override
     public String toString() {
         return "FlatRackContainer{" +
-                "mass=" + mass +
+                "mass=" + getMass() +
                 ", maxLoad=" + maxLoad +
                 ", length=" + length +
                 ", width=" + width +
@@ -390,7 +421,7 @@ class OpenTopContainer extends Container {
     @Override
     public String toString() {
         return "OpenTopContainer{" +
-                "mass=" + mass +
+                "mass=" + getMass() +
                 ", maxLoad=" + maxLoad +
                 ", length=" + length +
                 ", width=" + width +
@@ -408,7 +439,7 @@ class HighCubeContainer extends Container {
     @Override
     public String toString() {
         return "HighCubeContainer{" +
-                "mass=" + mass +
+                "mass=" + getMass() +
                 ", maxLoad=" + maxLoad +
                 ", length=" + length +
                 ", width=" + width +
@@ -426,7 +457,7 @@ class InsulatedContainer extends Container {
     @Override
     public String toString() {
         return "InsulatedContainer{" +
-                "mass=" + mass +
+                "mass=" + getMass() +
                 ", maxLoad=" + maxLoad +
                 ", length=" + length +
                 ", width=" + width +
@@ -447,7 +478,7 @@ class TankContainer extends Container {
     @Override
     public String toString() {
         return "TankContainer{" +
-                "mass=" + mass +
+                "mass=" + getMass() +
                 ", maxLoad=" + maxLoad +
                 ", length=" + length +
                 ", width=" + width +
@@ -469,7 +500,7 @@ class PalletWideContainer extends Container {
     @Override
     public String toString() {
         return "PalletWideContainer{" +
-                "mass=" + mass +
+                "mass=" + getMass() +
                 ", maxLoad=" + maxLoad +
                 ", length=" + length +
                 ", width=" + width +
