@@ -175,9 +175,9 @@ class Ship {
                     break;
                 }
 
-                String containerName = "";
+                StringBuffer containerName = new StringBuffer();
                 while(temp != '{') {
-                    containerName += temp;
+                    containerName.append(temp);
                     temp = (char)file.read();
                 }
 
@@ -185,10 +185,10 @@ class Ship {
                     temp = (char)file.read();
                 }
 
-                String massTemp = "";
+                StringBuffer massTemp = new StringBuffer();
                 temp = (char)file.read();
                 while(temp != ',') {
-                    massTemp += temp;
+                    massTemp.append(temp);
                     temp = (char)file.read();
                 }
 
@@ -197,9 +197,9 @@ class Ship {
                 }
 
                 temp = (char)file.read();
-                String contentTemp = "";
+                StringBuffer contentTemp = new StringBuffer();
                 while(temp != '\'') {
-                    contentTemp += temp;
+                    contentTemp.append(temp);
                     temp = (char)file.read();
                 }
 
@@ -207,36 +207,36 @@ class Ship {
                     temp = (char)file.read();
                 }
 
-                switch(containerName) {
+                switch(containerName.toString()) {
                     case "GeneralPurposeContainer":
-                        this.load[this.currentLoad] = new GeneralPurposeContainer(Float.parseFloat(massTemp), contentTemp);
+                        this.load[this.currentLoad] = new GeneralPurposeContainer(Float.parseFloat(massTemp.toString()), contentTemp.toString());
                         break;
                     case "HardTopContainerShort":
-                        this.load[this.currentLoad] = new HardTopContainerShort(Float.parseFloat(massTemp), contentTemp);
+                        this.load[this.currentLoad] = new HardTopContainerShort(Float.parseFloat(massTemp.toString()), contentTemp.toString());
                         break;
                     case "HardTopContainerLong":
-                        this.load[this.currentLoad] = new HardTopContainerLong(Float.parseFloat(massTemp), contentTemp);
+                        this.load[this.currentLoad] = new HardTopContainerLong(Float.parseFloat(massTemp.toString()), contentTemp.toString());
                         break;
                     case "DoubleDoorContainer":
-                        this.load[this.currentLoad] = new DoubleDoorContainer(Float.parseFloat(massTemp), contentTemp);
+                        this.load[this.currentLoad] = new DoubleDoorContainer(Float.parseFloat(massTemp.toString()), contentTemp.toString());
                         break;
                     case "FlatRackContainer":
-                        this.load[this.currentLoad] = new FlatRackContainer(Float.parseFloat(massTemp), contentTemp);
+                        this.load[this.currentLoad] = new FlatRackContainer(Float.parseFloat(massTemp.toString()), contentTemp.toString());
                         break;
                     case "HighCubeContainer":
-                        this.load[this.currentLoad] = new HighCubeContainer(Float.parseFloat(massTemp), contentTemp);
+                        this.load[this.currentLoad] = new HighCubeContainer(Float.parseFloat(massTemp.toString()), contentTemp.toString());
                         break;
                     case "InsulatedContainer":
-                        this.load[this.currentLoad] = new InsulatedContainer(Float.parseFloat(massTemp), contentTemp);
+                        this.load[this.currentLoad] = new InsulatedContainer(Float.parseFloat(massTemp.toString()), contentTemp.toString());
                         break;
                     case "OpenTopContainer":
-                        this.load[this.currentLoad] = new OpenTopContainer(Float.parseFloat(massTemp), contentTemp);
+                        this.load[this.currentLoad] = new OpenTopContainer(Float.parseFloat(massTemp.toString()), contentTemp.toString());
                         break;
                     case "PalletWideContainer":
-                        this.load[this.currentLoad] = new PalletWideContainer(Float.parseFloat(massTemp), contentTemp);
+                        this.load[this.currentLoad] = new PalletWideContainer(Float.parseFloat(massTemp.toString()), contentTemp.toString());
                         break;
                     case "TankContainer":
-                        this.load[this.currentLoad] = new TankContainer(Float.parseFloat(massTemp), contentTemp);
+                        this.load[this.currentLoad] = new TankContainer(Float.parseFloat(massTemp.toString()), contentTemp.toString());
                         break;
                     default:
                         System.out.println("CONTAINER LOADING FAILED!");
