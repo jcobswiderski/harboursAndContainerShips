@@ -7,20 +7,21 @@ import java.io.IOException;
 
 public class S22773 {
     public static void main(String[] args) {
-
-        Harbour port = new Harbour("Gdańsk", 200);
+        Harbour port = new Harbour("Gdańsk", 50000);
         port.showContainers();
-        port.generateContainers(5);
+        port.generateContainers(550);
         port.showContainers();
-        port.generateContainers(5);
+        port.generateContainers(1);
         port.showContainers();
-        port.generateContainers(12);
+        port.generateContainers(2);
         port.showContainers();
         port.saveToFile("C:\\2021Z\\containers.txt");
 
-        Ship ship = new Ship("Maersk", 20);
+        Ship ship = new Ship("Maersk", 379);
         ship.readFromFile("C:\\2021Z\\containers.txt");
         ship.showLoad();
+
+        ship.generateManifest("C:\\2021Z\\uklad.manifest");
     }
 }
 
@@ -261,6 +262,107 @@ class Ship {
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void generateManifest(String path) {
+        int[] containerID = new int[this.getCurrentLoad()];
+        for(int i=0; i<this.getCurrentLoad(); i++)
+            containerID[i] = i;
+
+        for (int i = 0; i < containerID.length-1; i++)
+            for (int j = 0; j < containerID.length-i-1; j++)
+                if (this.load[containerID[j]].getMass() < this.load[containerID[j+1]].getMass())
+                {
+                    int temp = containerID[j];
+                    containerID[j] = containerID[j+1];
+                    containerID[j+1] = temp;
+                }
+
+        for (int i = 0; i < containerID.length; i++) {
+            System.out.println("containerID: " + (containerID[i]+1) + ", shipLoad: " + this.load[containerID[i]]);
+        }
+
+        Container[] sectionOne = new Container[this.getCurrentLoad() / 5 + 5];
+        Container[] sectionTwo = new Container[this.getCurrentLoad() / 5 + 1];
+        Container[] sectionThree = new Container[this.getCurrentLoad() / 5 + 1];
+        Container[] sectionFour = new Container[this.getCurrentLoad() / 5 + 1];
+        Container[] sectionFive = new Container[this.getCurrentLoad() / 5 + 1];
+
+        int counterSectionOne = 0;
+        int counterSectionTwo = 0;
+        int counterSectionThree = 0;
+        int counterSectionFour = 0;
+        int counterSectionFive = 0;
+
+        int tempLeftContainers = this.currentLoad;
+        for(int i=1; i<=tempLeftContainers; i++) {
+            switch(i % 5) {
+                case 1:
+                    sectionOne[counterSectionOne++] = this.load[containerID[i-1]];
+                    break;
+                case 2:
+                    sectionTwo[counterSectionTwo++] = this.load[containerID[i-1]];
+                    break;
+                case 3:
+                    sectionThree[counterSectionThree++] = this.load[containerID[i-1]];
+                    break;
+                case 4:
+                    sectionFour[counterSectionFour++] = this.load[containerID[i-1]];
+                    break;
+                default:
+                    sectionFive[counterSectionFive++] = this.load[containerID[i-1]];
+                    break;
+            }
+        }
+
+        try {
+            FileWriter file = new FileWriter(path);
+
+            float sumOfMass = 0;
+
+            file.write("SECTION ONE\n");
+            for(int i=0; i<counterSectionOne; i++) {
+                file.write(sectionOne[i].toString() + "\n");
+                sumOfMass += sectionOne[i].getMass();
+            }
+            file.write("SUM OF MASS: " + sumOfMass + "\n");
+            sumOfMass = 0;
+
+            file.write("\nSECTION TWO\n");
+            for(int i=0; i<counterSectionTwo; i++) {
+                file.write(sectionTwo[i].toString() + "\n");
+                sumOfMass += sectionTwo[i].getMass();
+            }
+            file.write("SUM OF MASS: " + sumOfMass + "\n");
+            sumOfMass = 0;
+
+            file.write("\nSECTION THREE\n");
+            for(int i=0; i<counterSectionThree; i++) {
+                file.write(sectionThree[i].toString() + "\n");
+                sumOfMass += sectionThree[i].getMass();
+            }
+            file.write("SUM OF MASS: " + sumOfMass + "\n");
+            sumOfMass = 0;
+
+            file.write("\nSECTION FOUR\n");
+            for(int i=0; i<counterSectionFour; i++) {
+                file.write(sectionFour[i].toString() + "\n");
+                sumOfMass += sectionFour[i].getMass();
+            }
+            file.write("SUM OF MASS: " + sumOfMass + "\n");
+            sumOfMass = 0;
+
+            file.write("\nSECTION FIVE\n");
+            for(int i=0; i<counterSectionFive; i++) {
+                file.write(sectionFive[i].toString() + "\n");
+                sumOfMass += sectionFive[i].getMass();
+            }
+            file.write("SUM OF MASS: " + sumOfMass + "\n");
+
+            file.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
