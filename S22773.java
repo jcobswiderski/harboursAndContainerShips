@@ -1,24 +1,21 @@
-package project;
-
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.SQLOutput;
 
 public class S22773 {
     public static void main(String[] args) {
         Harbour port = new Harbour("Gdańsk", 30000);
         port.showInfo();
-        port.generateContainers(311);
+        port.generateContainers(5000);
         port.showInfo();
         port.generateContainers(27);
         port.showInfo();
-        port.saveToFile("C:\\2021Z\\containers.txt");
+        port.saveToFile("C:\\S22773\\containers.txt");
 
-        Ship ship = new Ship("Maersk", 15000);
-        ship.readFromFile("C:\\2021Z\\containers.txt");
-        ship.generateManifest("C:\\2021Z\\arrangement.manifest");
+        Ship ship = new Ship("Maersk", 300);
+        ship.readFromFile("C:\\S22773\\containers.txt");
+        ship.generateManifest("C:\\S22773\\arrangement.manifest");
     }
 }
 
@@ -48,11 +45,11 @@ class Harbour {
             String[] cargoType;
             int drawCargo;
 
-            switch ((int)(Math.random() * 10)) {
+            switch ((int)(Math.random() * 10)) { // losowanie typu kontenera
                 case 0:
-                    generatedMass = (float)(Math.random() * 21.8);
+                    generatedMass = (float)(Math.random() * 21.8); // losowanie masy towaru
                     cargoType = new String[]{"electronics", "tools", "toys", "clothes"};
-                    drawCargo = (int)(Math.random() * cargoType.length);
+                    drawCargo = (int)(Math.random() * cargoType.length); // losowanie towaru
                     this.containers[i] = new GeneralPurposeContainer(generatedMass, cargoType[drawCargo]);
                     break;
                 case 1:
@@ -119,7 +116,6 @@ class Harbour {
 
     void saveToFile(String path) {
         try {
-
             FileWriter file = new FileWriter(path);
 
             for(int i=0; i<this.numOfStoredContainers; i++) {
@@ -171,6 +167,7 @@ class Ship {
             while(this.currentLoad < this.maxCapacity) {
                 char temp = (char)file.read();
 
+                // ilosc kontenerow w pliku < pojemnosc statku
                 if(temp == '\uFFFF') {
                     break;
                 }
@@ -282,7 +279,7 @@ class Ship {
         int counterSectionFive = 0;
 
         int tempLeftContainers = this.currentLoad;
-        System.out.println("MANIFEST FILE WITH PROPER CONTAINERS ARRANGEMENT HAS BEEN GENERATED");
+
         for(int i=1; i<=tempLeftContainers; i++) {
             switch(i % 5) {
                 case 1:
@@ -362,6 +359,7 @@ class Ship {
             }
             file.write("SUM OF CONTAINER WEIGHTS: " + sumOfMass + "t\n");
 
+            System.out.println("MANIFEST FILE WITH PROPER CONTAINERS ARRANGEMENT HAS BEEN GENERATED");
             file.close();
         } catch (IOException e) {
             e.printStackTrace();
